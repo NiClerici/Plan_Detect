@@ -1,0 +1,9 @@
+python==3.9
+torch
+transformers
+Pillow
+gradio
+PyMuPDF
+opencv-python
+detectron2
+ipywidgets
