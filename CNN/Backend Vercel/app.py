@@ -9,6 +9,13 @@ from detectron2 import model_zoo
 from detectron2.utils.visualizer import Visualizer
 from detectron2.data import MetadataCatalog
 from huggingface_hub import hf_hub_download
+# Detectron2 nachträglich installieren (nur wenn nötig)
+try:
+    import detectron2
+except ImportError:
+    print("📦 Installing detectron2...")
+    os.system("pip install git+https://github.com/facebookresearch/detectron2.git")
+
 
 # Flask setup
 app = Flask(__name__)
