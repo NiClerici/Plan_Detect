@@ -7,3 +7,9 @@ PyMuPDF
 opencv-python
 detectron2
 ipywidgets
+flask
+flask-cors
+torch
+detectron2 @ git+https://github.com/facebookresearch/detectron2.git
+huggingface-hub
+opencv-python-headless
