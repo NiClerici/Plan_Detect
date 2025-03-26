@@ -1,41 +1,61 @@
-import fitz  # PyMuPDF
-import re
+from PIL import Image
 import gradio as gr
+import torch
+from transformers import AutoProcessor, AutoModelForVision2Seq
 
-# Regular expression for measurements: xx.xxx, xx.xx, x.xxx, x.xx, x.x
-pattern = r"\b\d{1,2}\.\d{1,3}\b"
+# Check if CUDA is available
+device = "cuda" if torch.cuda.is_available() else "cpu"
 
+# Load model and processor
+model_path = "ibm-granite/granite-vision-3.2-2b"
 
-def extract_numbers_and_preview(pdf_file):
-    """Extracts measurements from a PDF file and displays them."""
-
-    # Open PDF
-    doc = fitz.open(pdf_file.name)
-    found_numbers = []
-
-    # Extract text from all pages
-    for page in doc:
-        text = page.get_text("text")
-        numbers = re.findall(pattern, text)
-        found_numbers.extend(numbers)
-
-    # Return list of found numbers as text
-    extracted_text = "\n".join(found_numbers) if found_numbers else "No measurements found."
-
-    # Return extracted data + PDF for display
-    return extracted_text, pdf_file.name
+processor = AutoProcessor.from_pretrained(model_path)
+model = AutoModelForVision2Seq.from_pretrained(model_path).to(device)
 
 
-# Create Gradio interface
+def analyze_image(image, prompt):
+    """Analyzes the uploaded image based on the entered prompt."""
+
+    # Convert image to PIL format (if necessary)
+    image = Image.open(image).convert("RGB")
+
+    # Create chat template with image and prompt
+    conversation = [
+        {
+            "role": "user",
+            "content": [
+                {"type": "image", "url": image},
+                {"type": "text", "text": prompt},  # Use the entered prompt
+            ],
+        },
+    ]
+
+    # Prepare data for the model
+    inputs = processor.apply_chat_template(
+        conversation,
+        add_generation_prompt=True,
+        tokenize=True,
+        return_dict=True,
+        return_tensors="pt"
+    ).to(device)
+
+    # Model generation
+    output = model.generate(**inputs, max_new_tokens=100)
+    response = processor.decode(output[0], skip_special_tokens=True)
+
+    return response  # Return the model response
+
+
+# Gradio interface with image upload and prompt input
 iface = gr.Interface(
-    fn=extract_numbers_and_preview,  # Function for processing
-    inputs=gr.File(label="Upload a PDF"),  # File upload
-    outputs=[
-        gr.Textbox(label="Found measurements"),  # Display extracted numbers
-        gr.File(label="PDF preview")  # PDF as download and preview
+    fn=analyze_image,  # Function for image processing
+    inputs=[
+        gr.Image(type="filepath", label="Upload an image"),  # Image upload
+        gr.Textbox(label="Enter a question or prompt")  # Free prompt
     ],
-    title="📄 PDF Measurement Extractor",
-    description="This tool extracts measurements from a PDF file and displays the PDF.",
+    outputs=gr.Textbox(label="Model response"),  # Model output
+    title="🖼️ Interactive Image Analysis with Granite Vision",
+    description="Upload an image and enter a question or prompt. The model analyzes the image based on your prompt.",
 )
 
 # Launch Gradio app

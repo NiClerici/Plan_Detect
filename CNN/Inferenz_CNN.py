@@ -1,13 +1,13 @@
 import cv2
-import os
 import numpy as np
 import gradio as gr
+import torch
 from detectron2.engine import DefaultPredictor
 from detectron2.config import get_cfg
 from detectron2 import model_zoo
 from detectron2.utils.visualizer import Visualizer
 from detectron2.data import MetadataCatalog
-
+from huggingface_hub import hf_hub_download
 
 # Image preprocessing function (scaling & sharpening)
 def preprocess_image(image, scale_factor=1.5, sharpen=True):
@@ -24,22 +24,26 @@ def preprocess_image(image, scale_factor=1.5, sharpen=True):
 
     return upscaled
 
-
 # Detectron2 configuration
 cfg = get_cfg()
 cfg.merge_from_file(model_zoo.get_config_file("COCO-InstanceSegmentation/mask_rcnn_X_101_32x8d_FPN_3x.yaml"))
-# Set the path to your model weights (adjust the path as needed)
-cfg.MODEL.WEIGHTS = "/Users/nicoclerici/Documents/Bewerbung/DBew/Prototyp_eBew/prototyp/Backend/model_final.pth"
+
+# Laden der Modellgewichte von Hugging Face
+model_repo = "clery27/plan_detect"
+model_filename = "model_final.pth"
+model_path = hf_hub_download(repo_id=model_repo, filename=model_filename)
+cfg.MODEL.WEIGHTS = model_path
+
 cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.7
 cfg.MODEL.ROI_HEADS.NUM_CLASSES = 16
-cfg.MODEL.DEVICE = "cpu"  # or "cuda" if GPU is available
+cfg.MODEL.DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 cfg.INPUT.MIN_SIZE_TEST = 1024
 cfg.INPUT.MAX_SIZE_TEST = 2048
 cfg.TEST.DETECTIONS_PER_IMAGE = 50
 cfg.MODEL.RPN.NMS_THRESH = 0.8
 cfg.MODEL.ROI_HEADS.NMS_THRESH_TEST = 0.5
 
-# Set metadata for classes (translated into English)
+# Set metadata for classes
 dataset_name = "train_dataset"
 MetadataCatalog.get(dataset_name).set(thing_classes=[
     "Street Name", "New Building", "Existing Building",
@@ -52,7 +56,6 @@ metadata = MetadataCatalog.get(dataset_name)
 # Initialize the model
 predictor = DefaultPredictor(cfg)
 print("✅ Detectron2 model loaded successfully!")
-
 
 def segment_image(input_image):
     """
@@ -78,7 +81,6 @@ def segment_image(input_image):
     else:
         # If no objects are detected, return the preprocessed image
         return processed_img
-
 
 # Create Gradio interface
 iface = gr.Interface(
