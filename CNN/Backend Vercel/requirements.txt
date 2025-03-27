@@ -1,0 +1,11 @@
+torch
+torchvision
+transformers
+Pillow
+gradio
+PyMuPDF
+opencv-python-headless
+ipywidgets
+flask
+flask-cors
+huggingface-hub
