@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const BACKEND_URL = '/Users/nicoclerici/Documents/Bewerbung/DBew/Plan_Detection/CNN/Frontend Vercel/Inferenz.py';
+    const BACKEND_URL = "plandetect-production.up.railway.app";
     console.log("🚀 Frontend geladen. Verwende Backend:", BACKEND_URL);
 
     // Überprüfung, ob das Upload-Formular existiert
