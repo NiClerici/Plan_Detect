@@ -21,10 +21,11 @@ RUN pip install --upgrade pip && \
     pip install --no-cache-dir --no-build-isolation 'git+https://github.com/facebookresearch/detectron2.git'
 
 # 6. App-Code kopieren (Backend Ordner mit Leerzeichen)
-COPY ["CNN/Backend Vercel/", "/app"]
+COPY . /app
 
 # 7. Port-Variable (für Railway, aber lokal läuft 5000)
 ENV PORT=5000
+EXPOSE 5000
 
 # 8. App starten
 CMD ["python", "app.py"]

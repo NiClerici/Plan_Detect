@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const BACKEND_URL = "plandetect-production.up.railway.app";
+    const BACKEND_URL = "https://backend-vercel-production.up.railway.app";
     console.log("🚀 Frontend geladen. Verwende Backend:", BACKEND_URL);
 
     // Überprüfung, ob das Upload-Formular existiert

@@ -18,8 +18,10 @@ except ImportError:
 
 
 # Flask setup
-app = Flask(__name__)
-CORS(app)
+app = Flask(__name__, static_url_path='/static', static_folder='static')
+CORS(app, origins=["https://ebeg-frontend.vercel.app"])
+
+
 
 # Upload folder setup
 UPLOAD_FOLDER = os.path.join(os.getcwd(), 'static/uploads')
